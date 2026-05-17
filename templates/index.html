@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Traffic AI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>AI Traffic Management Dashboard</h1>
+      <p>Vehicle-aware signal optimization with emergency prioritization.</p>
+
+      <form method="post" action="{{ url_for('analyze') }}" class="card grid">
+        {% for lane in lanes %}
+        <label>
+          {{ lane|capitalize }} lane vehicles
+          <input type="number" min="0" name="{{ lane }}_count" value="0" />
+        </label>
+        {% endfor %}
+
+        <label>
+          Manual emergency lane
+          <select name="emergency_lane">
+            <option value="">None</option>
+            {% for lane in lanes %}
+            <option value="{{ lane }}">{{ lane|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          Optional image path for YOLOv8 inference
+          <input type="text" name="image_path" placeholder="/absolute/path/to/image.jpg" />
+        </label>
+
+        <label>
+          Image lane
+          <select name="image_lane">
+            {% for lane in lanes %}
+            <option value="{{ lane }}">{{ lane|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <button type="submit">Analyze Traffic</button>
+      </form>
+
+      {% if result %}
+      <section class="card">
+        <h2>Signal Recommendation</h2>
+        <p><strong>Green Lane:</strong> {{ result.decision.lane|capitalize }}</p>
+        <p><strong>Green Duration:</strong> {{ result.decision.green_duration }} seconds</p>
+        <p><strong>Reason:</strong> {{ result.decision.reason }}</p>
+
+        <h3>Current Vehicle Counts</h3>
+        <ul>
+          {% for lane, count in result.lane_counts.items() %}
+          <li>{{ lane|capitalize }}: {{ count }}</li>
+          {% endfor %}
+        </ul>
+
+        <p>
+          <strong>Emergency Lanes:</strong>
+          {{ result.emergency_lanes|join(', ') if result.emergency_lanes else 'None' }}
+        </p>
+
+        {% if result.detection %}
+        <h3>YOLOv8 Detection Summary</h3>
+        <p><strong>Detected labels:</strong> {{ result.detection.labels|join(', ') if result.detection.labels else 'No objects detected / fallback used' }}</p>
+        <p><strong>Emergency detected:</strong> {{ 'Yes' if result.detection.emergency_detected else 'No' }}</p>
+        {% if result.detection.warning %}
+        <p class="warning">{{ result.detection.warning }}</p>
+        {% endif %}
+        {% endif %}
+      </section>
+      {% endif %}
+    </main>
+  </body>
+</html>
