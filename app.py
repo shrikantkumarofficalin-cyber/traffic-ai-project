@@ -13,11 +13,7 @@ LANES = ("north", "south", "east", "west")
 def _parse_lane_counts(form_data: dict) -> dict[str, int]:
     lane_counts: dict[str, int] = {}
     for lane in LANES:
-        raw_value = form_data.get(f"{lane}_count", "0")
-        try:
-            lane_counts[lane] = max(0, int(raw_value))
-        except (TypeError, ValueError):
-            lane_counts[lane] = 0
+        lane_counts[lane] = _safe_non_negative_int(form_data.get(f"{lane}_count", "0"), default=0)
     return lane_counts
 
 
@@ -39,12 +35,12 @@ def analyze():
     selected_emergency_lane = request.form.get("emergency_lane", "")
     emergency_lanes = [selected_emergency_lane] if selected_emergency_lane in LANES else []
 
-    image_path = request.form.get("image_path", "").strip()
+    image_name = request.form.get("image_name", "").strip()
     image_lane = request.form.get("image_lane", "north")
     detection = None
 
-    if image_path and image_lane in LANES:
-        detection = detector.detect(image_path, allowed_root=".")
+    if image_name and image_lane in LANES:
+        detection = detector.detect(image_name, allowed_root="uploads")
         detected_count = sum(detection["counts"].values())
         lane_counts[image_lane] += detected_count
         if detection["emergency_detected"] and image_lane not in emergency_lanes:
