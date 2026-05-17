@@ -20,12 +20,21 @@ class VehicleDetector:
         except Exception as exc:  # pragma: no cover - depends on runtime availability
             self.model_error = str(exc)
 
-    def detect(self, image_path: str) -> dict:
+    def detect(self, image_path: str, allowed_root: str | None = None) -> dict:
         counts = {"car": 0, "truck": 0, "bus": 0, "motorcycle": 0}
         emergency_detected = False
         labels: list[str] = []
 
-        path = Path(image_path)
+        path = Path(image_path).expanduser().resolve()
+        root = Path(allowed_root or Path.cwd()).expanduser().resolve()
+        if root not in path.parents and path != root:
+            return {
+                "counts": counts,
+                "emergency_detected": False,
+                "labels": labels,
+                "warning": f"Image path must be inside: {root}",
+            }
+
         if not path.exists():
             return {
                 "counts": counts,
@@ -42,7 +51,7 @@ class VehicleDetector:
                     class_id = int(box.cls[0])
                     label = str(names[class_id]).lower()
                     labels.append(label)
-                    if label in VEHICLE_CLASSES:
+                    if label in VEHICLE_CLASSES and label in counts:
                         counts[label] += 1
                     if any(keyword in label for keyword in EMERGENCY_KEYWORDS):
                         emergency_detected = True

@@ -21,6 +21,13 @@ def _parse_lane_counts(form_data: dict) -> dict[str, int]:
     return lane_counts
 
 
+def _safe_non_negative_int(value, default: int = 0) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return default
+
+
 @app.route("/", methods=["GET"])
 def dashboard():
     return render_template("index.html", lanes=LANES, result=None)
@@ -37,7 +44,7 @@ def analyze():
     detection = None
 
     if image_path and image_lane in LANES:
-        detection = detector.detect(image_path)
+        detection = detector.detect(image_path, allowed_root=".")
         detected_count = sum(detection["counts"].values())
         lane_counts[image_lane] += detected_count
         if detection["emergency_detected"] and image_lane not in emergency_lanes:
@@ -57,7 +64,7 @@ def analyze():
 @app.route("/api/analyze", methods=["POST"])
 def analyze_api():
     payload = request.get_json(silent=True) or {}
-    lane_counts = {lane: max(0, int(payload.get(lane, 0))) for lane in LANES}
+    lane_counts = {lane: _safe_non_negative_int(payload.get(lane, 0), default=0) for lane in LANES}
     emergency_lanes = [lane for lane in payload.get("emergency_lanes", []) if lane in LANES]
 
     decision = decide_signal_control(lane_counts, emergency_lanes)
@@ -73,4 +80,4 @@ def analyze_api():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

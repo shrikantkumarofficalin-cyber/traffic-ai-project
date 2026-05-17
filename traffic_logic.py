@@ -34,7 +34,7 @@ def decide_signal_control(
             reason="No lanes available",
         )
 
-    selected_lane = max(sorted(lane_counts), key=lambda lane: lane_counts[lane])
+    selected_lane = max(lane_counts, key=lambda lane: lane_counts[lane])
     total = sum(max(count, 0) for count in lane_counts.values())
     selected_count = max(lane_counts[selected_lane], 0)
 

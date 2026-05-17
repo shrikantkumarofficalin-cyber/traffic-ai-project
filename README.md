@@ -9,6 +9,7 @@ AI based traffic management and vehicle detection system using Python, YOLOv8, a
 - Adaptive traffic signal control based on congestion and emergency overrides
 - Clean Flask web dashboard for manual lane inputs, optional image inference, and signal output
 - JSON API endpoint for programmatic signal decisions
+- Safe image-path handling (dashboard image paths are restricted to files inside the project directory)
 
 ## Project structure
 
