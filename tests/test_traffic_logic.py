@@ -28,7 +28,7 @@ class TrafficSignalDecisionTests(unittest.TestCase):
 
     def test_zero_traffic_uses_minimum_duration(self):
         decision = decide_signal_control({"north": 0, "south": 0, "east": 0, "west": 0})
-        self.assertIn(decision.lane, {"north", "south", "east", "west"})
+        self.assertEqual(decision.lane, "west")
         self.assertEqual(decision.green_duration, 10)
         self.assertEqual(decision.reason, "Highest congestion lane")
 

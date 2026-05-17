@@ -35,6 +35,7 @@ python app.py
 ```
 
 Then open `http://127.0.0.1:5000`.
+For production deployment, run the Flask app behind a production WSGI server (for example, Gunicorn).
 
 To test image-based detection in dashboard mode, place images in `/uploads` and enter only the filename.
 

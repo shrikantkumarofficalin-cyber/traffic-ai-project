@@ -28,6 +28,13 @@ class VehicleDetector:
         root = Path(allowed_root or Path.cwd()).expanduser().resolve()
         safe_name = Path(image_name).name
         path = (root / safe_name).resolve()
+        if root not in path.parents and path.parent != root:
+            return {
+                "counts": counts,
+                "emergency_detected": False,
+                "labels": labels,
+                "warning": "Invalid image path",
+            }
 
         if not path.exists():
             return {
@@ -45,7 +52,7 @@ class VehicleDetector:
                     class_id = int(box.cls[0])
                     label = str(names[class_id]).lower()
                     labels.append(label)
-                    if label in VEHICLE_CLASSES and label in counts:
+                    if label in counts:
                         counts[label] += 1
                     if any(keyword in label for keyword in EMERGENCY_KEYWORDS):
                         emergency_detected = True
