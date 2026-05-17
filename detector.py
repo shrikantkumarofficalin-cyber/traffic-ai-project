@@ -28,7 +28,7 @@ class VehicleDetector:
         root = Path(allowed_root or Path.cwd()).expanduser().resolve()
         safe_name = Path(image_name).name
         path = (root / safe_name).resolve()
-        if root not in path.parents and path.parent != root:
+        if not path.is_relative_to(root):
             return {
                 "counts": counts,
                 "emergency_detected": False,
